@@ -3,9 +3,9 @@ package nineseven.review.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nineseven.review.domain.dto.InputHistoryFormDto;
+import nineseven.review.domain.dto.YoutubeApiResultDto;
 import nineseven.review.service.InputHistoryService;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
+import nineseven.review.service.YoutubeApiService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,17 +18,17 @@ import java.util.List;
 public class InputHistoryController {
 
     private final InputHistoryService inputHistoryService;
+    private final YoutubeApiService youtubeApiService;
 
     @PostMapping("/save")
-    public Object saveController(@Validated @RequestBody InputHistoryFormDto inputHistoryFormDto,
-                                 BindingResult bindingResult) {
+    public List<YoutubeApiResultDto> saveController(@Validated @RequestBody InputHistoryFormDto inputHistoryFormDto) {
 
-        if (bindingResult.hasErrors()) {
+        List<YoutubeApiResultDto> resultList = youtubeApiService.getResultList(inputHistoryFormDto.getTitle());
 
-            return bindingResult.getAllErrors();
-        }
+        //Log Save
         inputHistoryService.save(inputHistoryFormDto);
-        return "OK!";
+        return resultList;
     }
+
 
 }

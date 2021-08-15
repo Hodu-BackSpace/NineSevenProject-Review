@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import nineseven.review.domain.InputHistory;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -25,7 +24,6 @@ public class InputHistoryFormDto {
         this.title = title;
         this.subscribe = subscribe;
     }
-
 
     public static InputHistory of(InputHistoryFormDto inputHistoryFormDto) {
         return InputHistory.builder()
