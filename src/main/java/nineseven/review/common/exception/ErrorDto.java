@@ -1,10 +1,14 @@
 package nineseven.review.common.exception;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ErrorDto {
 
-    private int statusCode;
-    private String message;
+    private String fieldName;
+    private String defaultMessage;
+    private String rejectedValue;
 }

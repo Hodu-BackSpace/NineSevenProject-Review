@@ -17,10 +17,10 @@ public class InputHistoryFormDto {
     private String title;
 
     @NotNull(message = "Must Subscribe")
-    private Long subscribe;
+    private Integer subscribe;
 
     @Builder
-    public InputHistoryFormDto(String title, Long subscribe) {
+    public InputHistoryFormDto(String title, Integer subscribe) {
         this.title = title;
         this.subscribe = subscribe;
     }

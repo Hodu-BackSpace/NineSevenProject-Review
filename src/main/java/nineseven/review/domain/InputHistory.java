@@ -19,10 +19,10 @@ public class InputHistory {
     private Long id;
 
     private String inputTitle;
-    private Long inputSubscribe;
+    private Integer inputSubscribe;
 
     @Builder
-    public InputHistory(String inputTitle, Long inputSubscribe) {
+    public InputHistory(String inputTitle, Integer inputSubscribe) {
         this.inputTitle = inputTitle;
         this.inputSubscribe = inputSubscribe;
     }
