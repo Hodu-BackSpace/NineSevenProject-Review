@@ -3,6 +3,7 @@ package nineseven.review.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nineseven.review.common.annotation.TokenInfo;
+import nineseven.review.domain.dto.VideoListDto;
 import nineseven.review.service.youtube.YoutubeApiServiceV2;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +20,8 @@ public class YoutubeApiController {
     private final YoutubeApiServiceV2 youtubeApiService;
 
     @GetMapping("/list")
-    public List<Object> videoList(@TokenInfo String authToken) {
-        List<Object> userVideoList = youtubeApiService.getUserChannelId(authToken);
+    public List<VideoListDto> videoList(@TokenInfo String authToken) {
+        List<VideoListDto> userVideoList = youtubeApiService.getUserChannelId(authToken);
 
         return userVideoList;
     }
