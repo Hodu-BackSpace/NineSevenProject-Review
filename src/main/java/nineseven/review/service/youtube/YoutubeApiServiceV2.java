@@ -7,6 +7,8 @@ import nineseven.review.domain.dto.VideoListDto;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -100,12 +102,50 @@ public class YoutubeApiServiceV2{
         /**
          * 인공지능 서버와 통신 시작
          */
-//        restTemplate.exchange();
+        return postCommentsListToAi(result);
 
-        return result;
     }
 
-    public void postCommentsListToAi(){
+    public List<CommentDto> postCommentsListToAi(List<CommentDto> comments) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity entity = new HttpEntity<>(comments,httpHeaders);
+
+        ResponseEntity<List>  responseEntity = restTemplate.exchange(
+                "http://localhost:5000/getComments",
+                HttpMethod.POST,
+                entity,
+                List.class);
+
+        List<String> body = (List<String>)responseEntity.getBody();
+
+        /**
+         * [{'aaaa', 0,} {'bbbb', 0}, {'cccc', 1}]
+         */
+        List<CommentDto> result = new ArrayList<CommentDto>();
+
+        int num = 1;
+        int cnt = 0;
+        String commentId = null;
+
+        for (String comment : body) {
+            if(num % 2 == 0){ // comment
+                if(comment.equals("0")){
+                    result.add(new CommentDto(commentId,comments.get(cnt).getComment()));
+                }
+                cnt++;
+            }else{ // commentId
+                commentId = comment;
+            }
+            num = num + 1;
+        }
+
+        log.info("{}", result.size());
+        return result;
+
+
 
     }
 
