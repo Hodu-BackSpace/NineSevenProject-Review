@@ -2,6 +2,7 @@ package nineseven.review.service.youtube;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nineseven.review.common.exception.ParentException;
 import nineseven.review.domain.dto.CommentDto;
 import nineseven.review.domain.dto.VideoListDto;
 import org.springframework.http.*;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -133,7 +135,7 @@ public class YoutubeApiServiceV2{
         for (String comment : body) {
             if(num % 2 == 0){ // comment
                 if(comment.equals("0")){
-                    result.add(new CommentDto(commentId,comments.get(cnt).getComment()));
+                    result.add(new CommentDto(comments.get(cnt).getComment(),commentId));
                 }
                 cnt++;
             }else{ // commentId
@@ -142,10 +144,31 @@ public class YoutubeApiServiceV2{
             num = num + 1;
         }
 
-        log.info("{}", result.size());
         return result;
+    }
 
+    public void deleteComment(String authToken,List<String> commentIds){
+        HttpHeaders httpHeaders = new HttpHeaders();
 
+        httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        httpHeaders.add("Authorization", authToken);
+
+        HttpEntity entity = new HttpEntity(httpHeaders);
+
+        commentIds.forEach(commentId -> {
+            try {
+                ResponseEntity<String> responseEntity = restTemplate.exchange("https://www.googleapis.com/youtube/v3/comments?id=" + commentId
+                        , HttpMethod.DELETE
+                        , entity
+                        , String.class
+                );
+            } catch (HttpClientErrorException e) {
+                throw new ParentException();
+            }
+
+        });
+
+        // NORMAL
 
     }
 
