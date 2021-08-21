@@ -1,6 +1,5 @@
 package nineseven.review.util;
 
-import lombok.RequiredArgsConstructor;
 import nineseven.review.common.resolver.TokenArgumentResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

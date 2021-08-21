@@ -1,4 +1,4 @@
-package nineseven.review.service.youtube;
+package nineseven.review.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,10 +6,7 @@ import nineseven.review.common.exception.ParentException;
 import nineseven.review.domain.dto.CommentDto;
 import nineseven.review.domain.dto.VideoListDto;
 import org.springframework.http.*;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,7 +18,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class YoutubeApiServiceV2{
+public class SyncService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String YOUTUBE_API_KEY = "AIzaSyCfjV7gb-8656MZM04PJhTs9kVVSIyWZ-8";
@@ -155,20 +152,22 @@ public class YoutubeApiServiceV2{
 
         HttpEntity entity = new HttpEntity(httpHeaders);
 
+        log.info("{}", commentIds);
         commentIds.forEach(commentId -> {
             try {
-                ResponseEntity<String> responseEntity = restTemplate.exchange("https://www.googleapis.com/youtube/v3/comments?id=" + commentId
-                        , HttpMethod.DELETE
+                log.info("{}",commentId);
+                ResponseEntity<String> responseEntity = restTemplate.exchange("https://www.googleapis.com/youtube/v3/comments/setModerationStatus?id=" + commentId
+                                + "&moderationStatus=rejected"
+                        , HttpMethod.POST
                         , entity
                         , String.class
                 );
             } catch (HttpClientErrorException e) {
+                e.printStackTrace();
                 throw new ParentException();
             }
 
         });
-
-        // NORMAL
 
     }
 
