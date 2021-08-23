@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nineseven.review.common.exception.ParentException;
 import nineseven.review.domain.dto.CommentDto;
+import nineseven.review.domain.dto.CommentResultDto;
 import nineseven.review.domain.dto.VideoListDto;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -60,26 +61,30 @@ public class SyncService {
         Map<String, Object> result = responseEntity.getBody();
         List<Map<String, Map<String, String>>> items = (List<Map<String, Map<String, String>>>) result.get("items");
 
-        List<Map<String, Map<String, String>>> splitList = items.subList(1, items.size());
+        log.info("{}", items);
 
-        for (Map<String, Map<String, String>> item : splitList) {
-            VideoListDto videoListDto = new VideoListDto(item.get("id").get("videoId"), item.get("snippet").get("title"), item.get("snippet").get("description"));
-            resultList.add(videoListDto);
-            if (cnt % 3 == 0 || cnt == splitList.size()) {
-                List<VideoListDto> tempList = new ArrayList<>();
-                for (VideoListDto videoIter : resultList) {
-                    tempList.add(videoIter);
+
+        for (Map<String, Map<String, String>> item : items) {
+
+            if(!item.get("id").get("kind").equals("youtube#channel")) {
+                VideoListDto videoListDto = new VideoListDto(item.get("id").get("videoId"), item.get("snippet").get("title"), item.get("snippet").get("description"));
+                resultList.add(videoListDto);
+                if (cnt % 3 == 0 || cnt == (items.size()-1)) {
+                    List<VideoListDto> tempList = new ArrayList<>();
+                    for (VideoListDto videoIter : resultList) {
+                        tempList.add(videoIter);
+                    }
+                    listResultList.add(tempList);
+                    resultList.clear();
                 }
-                listResultList.add(tempList);
-                resultList.clear();
+                cnt++;
             }
-            cnt++;
         }
 
         return listResultList;
     }
 
-    public List<CommentDto> getCommentList(String videoId){
+    public List<CommentResultDto> getCommentList(String videoId){
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -117,7 +122,7 @@ public class SyncService {
 
     }
 
-    public List<CommentDto> postCommentsListToAi(List<CommentDto> comments) {
+    public List<CommentResultDto> postCommentsListToAi(List<CommentDto> comments) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -145,24 +150,17 @@ public class SyncService {
          */
 
         /**
-         * ['Ugygzf08iyeRKU9yc9N4AaABAg', '0', 97.95262832194567, 'Ugygzf08iyeRKU9yc9N4AaABAg', '0', 60.01514494419098]
+         * ['Ugygzf08iyeRKU9yc9N4AaABAg', '1', 97.95262832194567, 'Ugygzf08iyeRKU9yc9N4AaABAg', '0', 60.01514494419098]
          */
-        List<CommentDto> result = new ArrayList<CommentDto>();
+        List<CommentResultDto> result = new ArrayList<CommentResultDto>();
 
-        int num = 1;
-        int cnt = 0;
-        String commentId = null;
-
-        for (String comment : body) {
-            if(num % 2 == 0){ // comment
-                if(comment.equals("0")){
-                    result.add(new CommentDto(comments.get(cnt).getComment(),commentId));
-                }
-                cnt++;
-            }else{ // commentId
-                commentId = comment;
+        int body_num = 0;
+        for(int count = 0; count<comments.size(); count++){
+            if(body.get(body_num+1).equals("0")) {
+                result.add(new CommentResultDto(
+                        body.get(body_num), comments.get(count).getComment(), body.get(body_num + 2)));
             }
-            num++;
+            body_num = body_num + 3;
         }
 
         return result;
@@ -176,10 +174,8 @@ public class SyncService {
 
         HttpEntity entity = new HttpEntity(httpHeaders);
 
-        log.info("{}", commentIds);
         commentIds.forEach(commentId -> {
             try {
-                log.info("{}",commentId);
                 ResponseEntity<String> responseEntity = restTemplate.exchange("https://www.googleapis.com/youtube/v3/comments/setModerationStatus?id=" + commentId
                                 + "&moderationStatus=rejected"
                         , HttpMethod.POST

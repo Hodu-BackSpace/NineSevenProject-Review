@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nineseven.review.common.annotation.TokenInfo;
 import nineseven.review.domain.dto.CommentDto;
+import nineseven.review.domain.dto.CommentResultDto;
 import nineseven.review.domain.dto.VideoListDto;
 import nineseven.review.service.SyncService;
 import org.springframework.http.HttpStatus;
@@ -59,22 +60,31 @@ public class SyncController {
 
     @GetMapping("/list")
     public List<List<VideoListDto>> videoList(@TokenInfo String authToken) {
-        List<List<VideoListDto>> userVideoList = youtubeApiService.getUserChannelId(authToken);
+//        List<List<VideoListDto>> userVideoList = youtubeApiService.getUserChannelId(authToken);
 
-        return userVideoList;
+        return userTestData;
     }
 
     @GetMapping("/comments/{videoId}")
-    public List<CommentDto> getComments(@PathVariable("videoId") String videoID) {
+    public List<CommentResultDto> getComments(@PathVariable("videoId") String videoID) {
         return youtubeApiService.getCommentList(videoID);
-//        return commentTestData;
     }
+    @PostMapping("/comments/test")
+    public String getComments(@RequestBody List<CommentDto> commentDtoList) {
+        return "[{\"commentId\":\"Ugygzf08iyeRKU9yc9N4AaABAg\",\"comment\":\"정말별로에요\",\"accuracy\":\"97.95262832194567\"},{\"commentId\":\"Ugygzf08iyeRKU9yc9N4AaABAg\",\"comment\":\"정말 나쁜 동영상입니다\",\"accuracy\":\"53.21442186832428\"}]";
+    }
+
+//    @PostMapping("/delete")
+//    @ResponseStatus(HttpStatus.OK)
+//    public String deleteComment(@TokenInfo String authToken,@RequestBody List<String> comments) {
+//        log.info("{}", comments);
+//        youtubeApiService.deleteComment(authToken, comments);
+//        return "OK!";
+//    }
 
     @PostMapping("/delete")
     @ResponseStatus(HttpStatus.OK)
-    public String deleteComment(@TokenInfo String authToken,@RequestBody List<String> comments) {
-        log.info("{}", comments);
-        youtubeApiService.deleteComment(authToken, comments);
+    public String deleteComment(@RequestBody List<String> comments) {
         return "OK!";
     }
 
