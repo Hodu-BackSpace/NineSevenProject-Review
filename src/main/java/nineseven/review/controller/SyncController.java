@@ -7,7 +7,6 @@ import nineseven.review.domain.dto.CommentDto;
 import nineseven.review.domain.dto.VideoListDto;
 import nineseven.review.service.SyncService;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
@@ -60,20 +59,21 @@ public class SyncController {
 
     @GetMapping("/list")
     public List<List<VideoListDto>> videoList(@TokenInfo String authToken) {
-//        List<VideoListDto> userVideoList = youtubeApiService.getUserChannelId(authToken);
+        List<List<VideoListDto>> userVideoList = youtubeApiService.getUserChannelId(authToken);
 
-        return userTestData;
+        return userVideoList;
     }
 
     @GetMapping("/comments/{videoId}")
     public List<CommentDto> getComments(@PathVariable("videoId") String videoID) {
-//        return youtubeApiService.getCommentList(videoID);
-        return commentTestData;
+        return youtubeApiService.getCommentList(videoID);
+//        return commentTestData;
     }
 
-    @DeleteMapping("/delete")
+    @PostMapping("/delete")
     @ResponseStatus(HttpStatus.OK)
     public String deleteComment(@TokenInfo String authToken,@RequestBody List<String> comments) {
+        log.info("{}", comments);
         youtubeApiService.deleteComment(authToken, comments);
         return "OK!";
     }

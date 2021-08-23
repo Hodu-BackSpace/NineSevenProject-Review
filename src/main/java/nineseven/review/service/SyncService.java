@@ -23,7 +23,7 @@ public class SyncService {
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String YOUTUBE_API_KEY = "AIzaSyCfjV7gb-8656MZM04PJhTs9kVVSIyWZ-8";
 
-    public List<VideoListDto> getUserChannelId(String authToken) {
+    public List<List<VideoListDto>> getUserChannelId(String authToken) {
         String access_token = authToken;
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", access_token);
@@ -43,7 +43,7 @@ public class SyncService {
     }
 
 
-    public List<VideoListDto> getUserVideos(String channelId,String authToken) {
+    public List<List<VideoListDto>> getUserVideos(String channelId,String authToken) {
         String access_token = authToken;
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", access_token);
@@ -54,17 +54,29 @@ public class SyncService {
                 entity, Map.class);
 
         List<VideoListDto> resultList = new ArrayList<>();
+        List<List<VideoListDto>> listResultList = new ArrayList<>();
+        int cnt = 1;
 
         Map<String, Object> result = responseEntity.getBody();
         List<Map<String, Map<String, String>>> items = (List<Map<String, Map<String, String>>>) result.get("items");
 
         List<Map<String, Map<String, String>>> splitList = items.subList(1, items.size());
-        splitList.iterator().forEachRemaining(item -> {
+
+        for (Map<String, Map<String, String>> item : splitList) {
             VideoListDto videoListDto = new VideoListDto(item.get("id").get("videoId"), item.get("snippet").get("title"), item.get("snippet").get("description"));
             resultList.add(videoListDto);
-        });
+            if (cnt % 3 == 0 || cnt == splitList.size()) {
+                List<VideoListDto> tempList = new ArrayList<>();
+                for (VideoListDto videoIter : resultList) {
+                    tempList.add(videoIter);
+                }
+                listResultList.add(tempList);
+                resultList.clear();
+            }
+            cnt++;
+        }
 
-        return resultList;
+        return listResultList;
     }
 
     public List<CommentDto> getCommentList(String videoId){
@@ -113,15 +125,27 @@ public class SyncService {
         HttpEntity entity = new HttpEntity<>(comments,httpHeaders);
 
         ResponseEntity<List>  responseEntity = restTemplate.exchange(
-                "http://localhost:5000/getComments",
+                "http://848f-1-233-178-252.ngrok.io/getComments",
                 HttpMethod.POST,
                 entity,
                 List.class);
 
         List<String> body = (List<String>)responseEntity.getBody();
+        /**
+         * [
+         *     {
+         *         "commentID" : "Ugygzf08iyeRKU9yc9N4AaABAg",
+         *         "comment" : "정말별로에요"
+         *     },
+         *     {
+         *         "commentID" : "Ugygzf08iyeRKU9yc9N4AaABAg",
+         *         "comment" : "안녕하세요"
+         *     }
+         * ]
+         */
 
         /**
-         * [{'aaaa', 0,} {'bbbb', 0}, {'cccc', 1}]
+         * ['Ugygzf08iyeRKU9yc9N4AaABAg', '0', 97.95262832194567, 'Ugygzf08iyeRKU9yc9N4AaABAg', '0', 60.01514494419098]
          */
         List<CommentDto> result = new ArrayList<CommentDto>();
 
@@ -138,7 +162,7 @@ public class SyncService {
             }else{ // commentId
                 commentId = comment;
             }
-            num = num + 1;
+            num++;
         }
 
         return result;
